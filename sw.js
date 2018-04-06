@@ -41,6 +41,9 @@ self.addEventListener('fetch', function(event) {
   // TODO: respond to requests for the root page with
   // the page skeleton from the cache
 
+
+//var corsRequest = new Request(url, {mode: 'cors'});
+//fetch(corsRequest).then(response => ...); // response won't be opaque.
   event.respondWith(
     caches.match(event.request).then(function(response) {
       return response || fetch(event.request);

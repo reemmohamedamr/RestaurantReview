@@ -27,19 +27,19 @@
         <div class="filter-div">
         <label class="filter-label" for="neighborhoods-select">Neighborhoods
         </label><br/>
-        <select id="neighborhoods-select" class="neighborhoods-select filter-options-select" name="neighborhoods" onchange="updateRestaurants()">
+        <select role="combobox" tabindex="0" id="neighborhoods-select" class="neighborhoods-select filter-options-select" name="neighborhoods" onchange="updateRestaurants()">
           <option value="all">All Neighborhoods</option>
         </select>
       </div>
       <div class="filter-div">
         <label class="filter-label" for="cuisines-select">Cuisines
         </label><br/>
-        <select id="cuisines-select" class="cuisines-select filter-options-select" name="cuisines" onchange="updateRestaurants()">
+        <select role="combobox" tabindex="0" id="cuisines-select" class="cuisines-select filter-options-select" name="cuisines" onchange="updateRestaurants()">
           <option value="all">All Cuisines</option>
         </select>
       </div>
       </div>
-      <ul class="restaurants-list"></ul>
+      <ul tabindex="0" class="restaurants-list"></ul>
     </section>
   </main>
 
