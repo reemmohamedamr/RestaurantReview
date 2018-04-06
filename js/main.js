@@ -10,8 +10,17 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+  registerServiceWorker();
 });
+registerServiceWorker= () => {
+if(!navigator.serviceWorker) return;
 
+   navigator.serviceWorker.register('/sw.js').then(function(registration) {
+     console.log('Service worker registration succeeded:', registration);
+   }).catch(function(error) {
+     console.log('Service worker registration failed:', error);
+   });
+}
 /**
  * Fetch all neighborhoods and set their HTML.
  */
@@ -30,7 +39,7 @@ fetchNeighborhoods = () => {
  * Set neighborhoods HTML.
  */
 fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
-  const select = document.getElementById('neighborhoods-select');
+  const select = document.getElementsByClassName('neighborhoods-select')[0];
   neighborhoods.forEach(neighborhood => {
     const option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -57,7 +66,7 @@ fetchCuisines = () => {
  * Set cuisines HTML.
  */
 fillCuisinesHTML = (cuisines = self.cuisines) => {
-  const select = document.getElementById('cuisines-select');
+  const select = document.getElementsByClassName('cuisines-select')[0];
 
   cuisines.forEach(cuisine => {
     const option = document.createElement('option');
@@ -75,7 +84,7 @@ window.initMap = () => {
     lat: 40.722216,
     lng: -73.987501
   };
-  self.map = new google.maps.Map(document.getElementById('map'), {
+  self.map = new google.maps.Map(document.getElementsByClassName('map')[0], {
     zoom: 12,
     center: loc,
     scrollwheel: false
@@ -87,8 +96,8 @@ window.initMap = () => {
  * Update page and map for current restaurants.
  */
 updateRestaurants = () => {
-  const cSelect = document.getElementById('cuisines-select');
-  const nSelect = document.getElementById('neighborhoods-select');
+  const cSelect = document.getElementsByClassName('cuisines-select')[0];
+  const nSelect = document.getElementsByClassName('neighborhoods-select')[0];
 
   const cIndex = cSelect.selectedIndex;
   const nIndex = nSelect.selectedIndex;
@@ -112,7 +121,7 @@ updateRestaurants = () => {
 resetRestaurants = (restaurants) => {
   // Remove all restaurants
   self.restaurants = [];
-  const ul = document.getElementById('restaurants-list');
+  const ul = document.getElementsByClassName('restaurants-list')[0];
   ul.innerHTML = '';
 
   // Remove all map markers
@@ -125,7 +134,7 @@ resetRestaurants = (restaurants) => {
  * Create all restaurants HTML and add them to the webpage.
  */
 fillRestaurantsHTML = (restaurants = self.restaurants) => {
-  const ul = document.getElementById('restaurants-list');
+  const ul = document.getElementsByClassName('restaurants-list')[0];
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
@@ -138,9 +147,12 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
+  li.setAttribute("tabindex", "0");
+
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.setAttribute("alt", DBHelper.imageAltForRestaurant(restaurant))
   li.append(image);
 
   const name = document.createElement('h1');
@@ -176,3 +188,4 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     self.markers.push(marker);
   });
 }
+
