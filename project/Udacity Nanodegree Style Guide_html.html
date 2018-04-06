@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<!-- saved from url=(0066)http://udacity.github.io/frontend-nanodegree-styleguide/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Udacity Nanodegree Style Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./Udacity Nanodegree Style Guide_html_files/normalize.css">
+    <link rel="stylesheet" href="./Udacity Nanodegree Style Guide_html_files/font-awesome.min.css">
+    <link rel="stylesheet" href="./Udacity Nanodegree Style Guide_html_files/css">
+    <link rel="stylesheet" href="./Udacity Nanodegree Style Guide_html_files/style.css">
+<style id="cvox_indicator_style">.cvox_indicator_container {  position: absolute !important;  left: 0 !important;  top: 0 !important;  z-index: 2147483647 !important;  pointer-events: none !important;  margin: 0px !important;  padding: 0px !important;}.cvox_indicator_window_not_focused {  visibility: hidden !important;}.cvox_indicator_pulsing {  -webkit-animation:       cvox_indicator_pulsing_animation 0s 2 alternate !important;  -webkit-animation-timing-function: ease-in-out !important;}.cvox_indicator_region {  opacity: 0 !important;  -webkit-transition: opacity 1s !important;}.cvox_indicator_visible {  opacity: 1 !important;}.cvox_indicator_container .cvox_indicator_region * {  position:absolute !important;  box-shadow: 0 0 4px 4px #f7983a !important;  border-radius: 6px !important;  margin: 0px !important;  padding: 0px !important;  -webkit-transition: none !important;}.cvox_indicator_animate_normal .cvox_indicator_region * {  -webkit-transition: all 0.3s !important;}.cvox_indicator_animate_quick .cvox_indicator_region * {  -webkit-transition: all 0.1s !important;}.cvox_indicator_top {  border-radius: inherit inherit 0 0 !important;}.cvox_indicator_middle_nw {  border-radius: inherit 0 0 0 !important;}.cvox_indicator_middle_ne {  border-radius: 0 inherit 0 0 !important;}.cvox_indicator_middle_se {  border-radius: 0 0 inherit 0 !important;}.cvox_indicator_middle_sw {  border-radius: 0 0 0 inherit !important;}.cvox_indicator_bottom {  border-radius: 0 0 inherit inherit !important;}@-webkit-keyframes cvox_indicator_pulsing_animation {   0% {opacity: 1.0}  50% {opacity: 0.5} 100% {opacity: 1.0}}</style><script type="text/javascript" mathjax="1">// Copyright 2013 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Utility functions for the MathJax bridge. It contains
+ * functionality that changes the normal behaviour of MathJax contributed by
+ * Davide Cervone (dpvc@union.edu) and adapted by Volker Sorge
+ * (sorge@google.com).
+ * This is the only file that should contain actual MathJax code!
+ *
+ */
+
+if (typeof(goog) != 'undefined' && goog.provide) {
+  goog.provide('cvox.MathJaxExternalUtil');
+}
+
+
+if (!window['cvox']) {
+   window['cvox'] = {};
+}
+
+/**
+ * @constructor
+ */
+cvox.MathJaxExternalUtil = function() {
+};
+
+
+/**
+ * Returns a string with Mathml attributes for a MathJax object.  This serves as
+ * intermediate store for the original function when we temporarily change
+ * MathJax's output behaviour.
+ * @return {string}
+ */
+cvox.MathJaxExternalUtil.mmlAttr = function() {
+  return '';
+};
+
+
+/**
+ * Rewrites an mfenced expression internally in MathJax to a corresponding mrow.
+ * @param {?string} space The separator expression.
+ * @return {string} The new mrow expression as a string.
+ * @this {MathJax.RootElement}
+ */
+cvox.MathJaxExternalUtil.mfenced = function(space) {
+    if (space == null) {
+      space = '';
+    }
+    var mml = [space + '<mrow mfenced="true"' +
+        this.toMathMLattributes() + '>'];
+    var mspace = space + '  ';
+    if (this.data.open) {
+      mml.push(this.data.open.toMathML(mspace));
+    }
+    if (this.data[0] != null) {
+      mml.push(this.data[0].toMathML(mspace));
+    }
+    for (var i = 1, m = this.data.length; i < m; i++) {
+      if (this.data[i]) {
+        if (this.data['sep' + i]) {
+          mml.push(this.data['sep' + i].toMathML(mspace));
+        }
+        mml.push(this.data[i].toMathML(mspace));
+      }
+    }
+  if (this.data.close) {
+    mml.push(this.data.close.toMathML(mspace));
+  }
+  mml.push(space + '</mrow>');
+  return mml.join('\n');
+};
+
+
+/**
+ * Compute the MathML representation of a MathJax element.
+ * @param {MathJax.Jax} jax MathJax object.
+ * @param {function(string)} callback Callback function.
+ * @return {Function} Callback function for restart.
+ * @this {cvox.MathJaxExternalUtil}
+ */
+cvox.MathJaxExternalUtil.getMathml = function(jax, callback) {
+  var mbaseProt = MathJax.ElementJax.mml.mbase.prototype;
+  var mfencedProt = MathJax.ElementJax.mml.mfenced.prototype;
+  this.mmlAttr = mbaseProt.toMathMLattributes;
+  var mfenced = mfencedProt.toMathML;
+  try {
+      mbaseProt.toMathMLattributes = cvox.MathJaxExternalUtil.mbase;
+      mfencedProt.toMathML = cvox.MathJaxExternalUtil.mfenced;
+      var mml = jax.root.toMathML('');
+      mbaseProt.toMathMLattributes = this.mmlAttr;
+      mfencedProt.toMathML = mfenced;
+      MathJax.Callback(callback)(mml);
+  } catch (err) {
+    mbaseProt.toMathMLattributes = this.mmlAttr;
+    mfencedProt.toMathML = mfenced;
+    if (!err['restart']) {
+      throw err;
+    }
+    return MathJax.Callback.After(
+        [cvox.MathJaxExternalUtil.getMathml, jax, callback], err['restart']);
+  }
+};
+
+
+/**
+ * Compute the special span ID attribute.
+ * @return {string} The MathJax spanID attribute string.
+ * @this {MathJax.RootElement}
+ */
+cvox.MathJaxExternalUtil.mbase = function() {
+  var attr = cvox.MathJaxExternalUtil.mmlAttr.call(this);
+  if (this.spanID != null) {
+    var id = (this.id || 'MathJax-Span-' + this.spanID) +
+        MathJax.OutputJax['HTML-CSS']['idPostfix'];
+    attr += ' spanID="' + id + '"';
+  }
+  if (this.texClass != null) {
+    attr += ' texClass="' + this.texClass + '"';
+  }
+  return attr;
+};
+
+
+/**
+ * Test that ensures that all important parts of MathJax have been initialized
+ * at startup.
+ * @return {boolean} True if MathJax is sufficiently initialised.
+ */
+cvox.MathJaxExternalUtil.isActive = function() {
+  return typeof(MathJax) != 'undefined' &&
+      typeof(MathJax.Hub) != 'undefined' &&
+      typeof(MathJax.ElementJax) != 'undefined' &&
+      typeof(MathJax.InputJax) != 'undefined';
+};
+
+
+/**
+ * Constructs a callback for a MathJax object with the purpose of returning the
+ * MathML representation of a particular jax given by its node id. The callback
+ * can be used by functions passing it to MathJax functions and is invoked by
+ * MathJax.
+ * @param {function(string, string)} callback A function taking a MathML
+ * expression and an id string.
+ * @param {MathJax.Jax} jax The MathJax object.
+ * @private
+ */
+cvox.MathJaxExternalUtil.getMathjaxCallback_ = function(callback, jax) {
+  cvox.MathJaxExternalUtil.getMathml(
+      jax,
+      function(mml) {
+        if (jax.root.inputID) {
+          callback(mml, jax.root.inputID);
+        }
+      });
+};
+
+
+/**
+ * Registers a callback for a particular Mathjax signal.
+ * @param {function(string, string)} callback A function taking an MathML
+ * expression and an id string.
+ * @param {string} signal The Mathjax signal on which to fire the callback.
+ */
+cvox.MathJaxExternalUtil.registerSignal = function(callback, signal) {
+  MathJax.Hub.Register.MessageHook(
+      signal,
+      function(signalAndIdPair) {
+        var jax = MathJax.Hub.getJaxFor(signalAndIdPair[1]);
+        cvox.MathJaxExternalUtil.getMathjaxCallback_(callback, jax);
+      });
+};
+
+
+/**
+ * Compute the MathML representation for all currently available MathJax
+ * nodes.
+ * @param {function(string, string)} callback A function taking a MathML
+ * expression and an id string.
+ */
+cvox.MathJaxExternalUtil.getAllJax = function(callback) {
+  var jaxs = MathJax.Hub.getAllJax();
+  if (jaxs) {
+    jaxs.forEach(function(jax) {
+      if (jax.root.spanID) {
+        cvox.MathJaxExternalUtil.getMathjaxCallback_(callback, jax);
+      }
+    });
+  }
+};
+
+
+// Functionality for direct translation from LaTeX to MathML without rendering.
+/**
+ * Injects a MathJax config script into the page.
+ * This script is picked up by MathJax at load time. It only runs in the page,
+ * thus in case it causes an exception it will not crash ChromeVox. The worst
+ * thing that can happen is that we do not get a MathML object for some
+ * LaTeX alternative text, i.e., we default to the usual behaviour of simply
+ * reading out the alt text directly.
+ */
+cvox.MathJaxExternalUtil.injectConfigScript = function() {
+  var script = document.createElement('script');
+  script.setAttribute('type', 'text/x-mathjax-config');
+  script.textContent =
+      'MathJax.Hub.Config({\n' +
+          // No output needed.
+      '  jax: ["input/AsciiMath", "input/TeX"],\n' +
+          // Load functionality for MathML translation.
+      '  extensions: ["toMathML.js"],\n' +
+          // Do not change any rendering in the page.
+      '  skipStartupTypeset: true,\n' +
+          // Do not display any MathJax status message.
+      '  messageStyle: "none",\n' +
+          // Load AMS math extensions.
+      '  TeX: {extensions: ["AMSmath.js","AMSsymbols.js"]}\n' +
+      '});\n' +
+      'MathJax.Hub.Queue(\n' +
+          // Force InputJax to load.
+      '  function() {MathJax.Hub.inputJax["math/asciimath"].Process();\n' +
+      '  MathJax.Hub.inputJax["math/tex"].Process()}\n' +
+      ');\n' +
+      '//\n' +
+      '// Prevent these from being loaded\n' +
+      '//\n' +
+          // Make sure that no pop up menu is created for the jax.
+      'if (!MathJax.Extension.MathMenu) {MathJax.Extension.MathMenu = {}};\n' +
+          // Make sure that jax is created unzoomed.
+      'if (!MathJax.Extension.MathZoom) {MathJax.Extension.MathZoom = {}};';
+  document.activeElement.appendChild(script);
+};
+
+
+/**
+ * Injects a MathJax load script into the page. This should only be injected
+ * after the config script. While the config script can adapted for different
+ * pages, the load script is generic.
+ *
+ */
+cvox.MathJaxExternalUtil.injectLoadScript = function() {
+  var script = document.createElement('script');
+  script.setAttribute('type', 'text/javascript');
+  var protocol = location.protocol == 'https:' ? 'https' : 'http';
+  script.setAttribute(
+      'src', protocol + '://cdn.mathjax.org/mathjax/latest/MathJax.js');
+  document.activeElement.appendChild(script);
+};
+
+
+/**
+ * Configures MathJax for MediaWiki pages (e.g., Wikipedia) by adding
+ * some special mappings to MathJax's symbol definitions. The function
+ * can only be successfully executed, once MathJax is injected and
+ * configured in the page.
+ */
+// Adapted from
+// https://en.wikipedia.org/wiki/User:Nageh/mathJax/config/TeX-AMS-texvc_HTML.js
+cvox.MathJaxExternalUtil.configMediaWiki = function() {
+  if (mediaWiki) {
+    MathJax.Hub.Register.StartupHook(
+      'TeX Jax Ready', function() {
+        var MML = MathJax.ElementJax.mml;
+        MathJax.Hub.Insert(
+          MathJax.InputJax.TeX.Definitions,
+          {
+            mathchar0mi: {
+              thetasym: '03B8',
+              koppa: '03DF',
+              stigma: '03DB',
+              varstigma: '03DB',
+              coppa: '03D9',
+              varcoppa: '03D9',
+              sampi: '03E1',
+              C: ['0043', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              cnums: ['0043', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              Complex: ['0043', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              H: ['210D', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              N: ['004E', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              natnums: ['004E', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              Q: ['0051', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              R: ['0052', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              reals: ['0052', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              Reals: ['0052', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              Z: ['005A', {mathvariant: MML.VARIANT.DOUBLESTRUCK}],
+              sect: '00A7',
+              P: '00B6',
+              AA: ['00C5', {mathvariant: MML.VARIANT.NORMAL}],
+              alef: ['2135', {mathvariant: MML.VARIANT.NORMAL}],
+              alefsym: ['2135', {mathvariant: MML.VARIANT.NORMAL}],
+              weierp: ['2118', {mathvariant: MML.VARIANT.NORMAL}],
+              real: ['211C', {mathvariant: MML.VARIANT.NORMAL}],
+              part: ['2202', {mathvariant: MML.VARIANT.NORMAL}],
+              infin: ['221E', {mathvariant: MML.VARIANT.NORMAL}],
+              empty: ['2205', {mathvariant: MML.VARIANT.NORMAL}],
+              O: ['2205', {mathvariant: MML.VARIANT.NORMAL}],
+              ang: ['2220', {mathvariant: MML.VARIANT.NORMAL}],
+              exist: ['2203', {mathvariant: MML.VARIANT.NORMAL}],
+              clubs: ['2663', {mathvariant: MML.VARIANT.NORMAL}],
+              diamonds: ['2662', {mathvariant: MML.VARIANT.NORMAL}],
+              hearts: ['2661', {mathvariant: MML.VARIANT.NORMAL}],
+              spades: ['2660', {mathvariant: MML.VARIANT.NORMAL}],
+              textvisiblespace: '2423',
+              geneuro: '20AC',
+              euro: '20AC'
+            },
+            mathchar0mo: {
+              and: '2227',
+              or: '2228',
+              bull: '2219',
+              plusmn: '00B1',
+              sdot: '22C5',
+              Dagger: '2021',
+              sup: '2283',
+              sub: '2282',
+              supe: '2287',
+              sube: '2286',
+              isin: '2208',
+              hAar: '21D4',
+              hArr: '21D4',
+              Harr: '21D4',
+              Lrarr: '21D4',
+              lrArr: '21D4',
+              lArr: '21D0',
+              Larr: '21D0',
+              rArr: '21D2',
+              Rarr: '21D2',
+              harr: '2194',
+              lrarr: '2194',
+              larr: '2190',
+              gets: '2190',
+              rarr: '2192',
+              oiint: ['222F', {texClass: MML.TEXCLASS.OP}],
+              oiiint: ['2230', {texClass: MML.TEXCLASS.OP}]
+            },
+            mathchar7: {
+              Alpha: '0391',
+              Beta: '0392',
+              Epsilon: '0395',
+              Zeta: '0396',
+              Eta: '0397',
+              Iota: '0399',
+              Kappa: '039A',
+              Mu: '039C',
+              Nu: '039D',
+              Omicron: '039F',
+              Rho: '03A1',
+              Tau: '03A4',
+              Chi: '03A7',
+              Koppa: '03DE',
+              Stigma: '03DA',
+              Digamma: '03DC',
+              Coppa: '03D8',
+              Sampi: '03E0'
+            },
+            delimiter: {
+              '\\uarr': '2191',
+              '\\darr': '2193',
+              '\\Uarr': '21D1',
+              '\\uArr': '21D1',
+              '\\Darr': '21D3',
+              '\\dArr': '21D3',
+              '\\rang': '27E9',
+              '\\lang': '27E8'
+            },
+            macros: {
+              sgn: 'NamedFn',
+              arccot: 'NamedFn',
+              arcsec: 'NamedFn',
+              arccsc: 'NamedFn',
+              sen: 'NamedFn',
+              image: ['Macro', '\\Im'],
+              bold: ['Macro', '\\mathbf{#1}', 1],
+              pagecolor: ['Macro', '', 1],
+              emph: ['Macro', '\\textit{#1}', 1],
+              textsf: ['Macro', '\\mathord{\\sf{\\text{#1}}}', 1],
+              texttt: ['Macro', '\\mathord{\\tt{\\text{#1}}}', 1],
+              vline: ['Macro', '\\smash{\\large\\lvert}', 0]
+            }
+          });
+      });
+  }
+};
+
+
+/**
+ * Converts an expression into MathML string.
+ * @param {function(string)} callback Callback function called with the MathML
+ * string after it is produced.
+ * @param {string} math The math Expression.
+ * @param {string} typeString Type of the expression to be converted (e.g.,
+ * "math/tex", "math/asciimath")
+ * @param {string} filterString Name of object specifying the filters to be used
+ * by MathJax (e.g., TeX, AsciiMath)
+ * @param {string} errorString Name of the error object used by MathJax (e.g.,
+ * texError, asciimathError).
+ * @param {!function(string)} parseFunction The MathJax function used for
+ * parsing the particular expression. This depends on the kind of expression we
+ * have.
+ * @return {Function} If a restart occurs, the callback for it is
+ * returned, so this can be used in MathJax.Hub.Queue() calls reliably.
+ */
+cvox.MathJaxExternalUtil.convertToMml = function(
+    callback, math, typeString, filterString, errorString, parseFunction) {
+  //  Make a fake script and pass it to the pre-filters.
+  var script = MathJax.HTML.Element('script', {type: typeString}, [math]);
+  var data = {math: math, script: script};
+  MathJax.InputJax[filterString].prefilterHooks.Execute(data);
+
+  //  Attempt to parse the code, processing any errors.
+  var mml;
+  try {
+    mml = parseFunction(data.math);
+  } catch (err) {
+    if (err[errorString]) {
+      // Put errors into <merror> tags.
+      mml = MathJax.ElementJax.mml.merror(err.message.replace(/\n.*/, ''));
+    } else if (err['restart']) {
+      //  Wait for file to load, then do this routine again.
+      return MathJax.Callback.After(
+          [cvox.MathJaxExternalUtil.convertToMml, callback, math,
+           typeString, filterString, errorString, parseFunction],
+          err['restart']);
+    } else {
+      //  It's an actual error, so pass it on.
+      throw err;
+    }
+  }
+
+  //  Make an ElementJax from the tree, call the post-filters, and get the
+  //  MathML.
+  if (mml.inferred) {
+    mml = MathJax.ElementJax.mml.apply(MathJax.ElementJax, mml.data);
+  } else {
+    mml = MathJax.ElementJax.mml(mml);
+  }
+  mml.root.display = 'block';
+  data.math = mml;
+  // This is necessary to make this function work even if MathJax is already
+  // properly injected into the page, as this object is used in MathJax's
+  // AMSmath.js file.
+  data.script['MathJax'] = {};
+  MathJax.InputJax[filterString].postfilterHooks.Execute(data);
+  return cvox.MathJaxExternalUtil.getMathml(data.math, callback);
+};
+
+
+/**
+ * Converts a LaTeX expression into MathML string.
+ * @param {function(string)} callback Callback function called with the MathML
+ * string after it is produced.
+ * @param {string} math Expression latex.
+ */
+cvox.MathJaxExternalUtil.texToMml = function(callback, math) {
+  cvox.MathJaxExternalUtil.convertToMml(
+      callback, math, 'math/tex;mode=display', 'TeX', 'texError',
+      function(data) {return MathJax.InputJax.TeX.Parse(data).mml();});
+};
+
+
+/**
+ * Converts an AsciiMath expression into MathML string.
+ * @param {function(string)} callback Callback function called with the MathML
+ * string after it is produced.
+ * @param {string} math Expression in AsciiMath.
+ */
+cvox.MathJaxExternalUtil.asciiMathToMml = function(callback, math) {
+  cvox.MathJaxExternalUtil.convertToMml(
+      callback, math, 'math/asciimath', 'AsciiMath', 'asciimathError',
+      MathJax.InputJax.AsciiMath.AM.parseMath);
+};
+
+//# sourceURL=chrome-extension://kgejglhpjiefppelpmljglcjbhoiplfn/chromevox/injected/mathjax_external_util.js
+</script><script type="text/javascript" mathjax="1">// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Bridge to MathJax functions from the ChromeVox content script.
+ *
+ */
+
+if (typeof(goog) != 'undefined' && goog.provide) {
+  goog.provide('cvox.MathJax');
+}
+
+if (typeof(goog) != 'undefined' && goog.require) {
+  goog.require('cvox.Api');
+  goog.require('cvox.MathJaxExternalUtil');
+}
+
+(function() {
+  /**
+   * The channel between the page and content script.
+   * @type {MessageChannel}
+   */
+  var channel_ = new MessageChannel();
+
+
+  /**
+   * @constructor
+   */
+  cvox.MathJax = function() {
+  };
+
+
+  /**
+   * Initializes message channel in Chromevox.
+   */
+  cvox.MathJax.initMessage = function() {
+    channel_.port1.onmessage = function(evt) {
+      cvox.MathJax.execMessage(evt.data);
+    };
+    window.postMessage('cvox.MathJaxPortSetup', '*', [channel_.port2]);
+  };
+
+
+  /**
+   * Post a message to Chromevox.
+   * @param {string} cmd The command to be executed in Chromevox.
+   * @param {string} callbackId A string representing the callback id.
+   * @param {Object<string, *>} args Dictionary of arguments.
+   */
+  cvox.MathJax.postMessage = function(cmd, callbackId, args) {
+    channel_.port1.postMessage({'cmd': cmd, 'id': callbackId, 'args': args});
+  };
+
+
+  /**
+   * Executes a command for an incoming message.
+   * @param {{cmd: string, id: string, args: string}} msg A
+   *     serializable message.
+   */
+  cvox.MathJax.execMessage = function(msg) {
+    var args = msg.args;
+    switch (msg.cmd) {
+      case 'Active':
+        cvox.MathJax.isActive(msg.id);
+      break;
+      case 'AllJax':
+        cvox.MathJax.getAllJax(msg.id);
+      break;
+      case 'AsciiMathToMml':
+        cvox.MathJax.asciiMathToMml(msg.id, args.alt, args.id);
+      break;
+      case 'InjectScripts':
+        cvox.MathJax.injectScripts();
+      break;
+      case 'ConfWikipedia':
+        cvox.MathJax.configMediaWiki();
+      break;
+      case 'RegSig':
+        cvox.MathJax.registerSignal(msg.id, args.sig);
+      break;
+      case 'TexToMml':
+        cvox.MathJax.texToMml(msg.id, args.alt, args.id);
+      break;
+    }
+  };
+
+
+  /**
+   * Compute the MathML representation for all currently available MathJax
+   * nodes.
+   * @param {string} callbackId A string representing the callback id.
+   */
+  cvox.MathJax.getAllJax = function(callbackId) {
+    cvox.MathJaxExternalUtil.getAllJax(
+        cvox.MathJax.getMathmlCallback_(callbackId));
+  };
+
+
+  /**
+   * Registers a callback for a particular Mathjax signal.
+   * @param {string} callbackId A string representing the callback id.
+   * @param {string} signal The Mathjax signal on which to fire the callback.
+   */
+  cvox.MathJax.registerSignal = function(callbackId, signal) {
+    cvox.MathJaxExternalUtil.registerSignal(
+        cvox.MathJax.getMathmlCallback_(callbackId), signal);
+  };
+
+
+  /**
+   * Constructs a callback that posts a string with the MathML representation of
+   * a MathJax element to ChromeVox.
+   * @param {string} callbackId A string representing the callback id.
+   * @return {function(Node, string)} A function taking a Mathml node and an id
+   * string.
+   * @private
+   */
+  cvox.MathJax.getMathmlCallback_ = function(callbackId) {
+    return function(mml, id) {
+      cvox.MathJax.postMessage('NodeMml', callbackId,
+                               {'mathml': mml, 'elementId': id});
+    };
+  };
+
+
+  /**
+   * Inject a minimalistic MathJax script into a page for LaTeX translation.
+   */
+  cvox.MathJax.injectScripts = function() {
+    cvox.MathJaxExternalUtil.injectConfigScript();
+    cvox.MathJaxExternalUtil.injectLoadScript();
+  };
+
+
+  /**
+   * Loads configurations for MediaWiki pages (e.g., Wikipedia).
+   */
+  cvox.MathJax.configMediaWiki = function() {
+        cvox.MathJaxExternalUtil.configMediaWiki();
+  };
+
+
+  /**
+   * Translates a LaTeX expressions into a MathML element.
+   * @param {string} callbackId A string representing the callback id.
+   * @param {string} tex The LaTeX expression.
+   * @param {string} cvoxId A string representing the cvox id for the node.
+   */
+  cvox.MathJax.texToMml = function(callbackId, tex, cvoxId) {
+    cvox.MathJaxExternalUtil.texToMml(
+        function(mml) {
+          cvox.MathJax.getMathmlCallback_(callbackId)(mml, cvoxId);
+        },
+        tex);
+  };
+
+
+  /**
+   * Translates an AsciiMath expression into a MathML element.
+   * @param {string} callbackId A string representing the callback id.
+   * @param {string} asciiMath The AsciiMath expression.
+   * @param {string} cvoxId A string representing the cvox id for the node.
+   */
+  cvox.MathJax.asciiMathToMml = function(callbackId, asciiMath, cvoxId) {
+    cvox.MathJaxExternalUtil.asciiMathToMml(
+        function(mml) {
+          cvox.MathJax.getMathmlCallback_(callbackId)(mml, cvoxId);
+        },
+        asciiMath);
+  };
+
+
+  /**
+   * Check if MathJax is injected in the page.
+   * @param {string} callbackId A string representing the callback id.
+   */
+  cvox.MathJax.isActive = function(callbackId) {
+    cvox.MathJax.postMessage(
+        'Active', callbackId,
+        {'status': cvox.MathJaxExternalUtil.isActive()});
+  };
+
+
+  // Initializing the bridge.
+  cvox.MathJax.initMessage();
+
+})();
+
+//# sourceURL=chrome-extension://kgejglhpjiefppelpmljglcjbhoiplfn/chromevox/injected/mathjax.js
+</script><script type="text/javascript" cvoxapi="1" chromevoxscriptbase="https://ssl.gstatic.com/accessibility/javascript/ext/">// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Shared util methods between api.js and api_implementation.js
+ * for doing common tasks such as passing node references between page script
+ * and ChromeVox.
+ */
+
+if (typeof(goog) != 'undefined' && goog.provide){
+  goog.provide('cvox.ApiUtil');
+}
+
+
+if (!window['cvox']) {
+   window['cvox'] = {};
+}
+
+/**
+ * @constructor
+ */
+cvox.ApiUtils = function() {
+};
+
+/**
+ * The next id to use for the cvoxid attribute that we add to elements
+ * in order to be able to find them from the content script.
+ * @type {number}
+ */
+cvox.ApiUtils.nextCvoxId_ = 1;
+
+/**
+ * Makes a serializable reference to a node.
+ * If the node or its parent has an ID, reference it directly. Otherwise,
+ * add a temporary cvoxid attribute. This has a corresponding method in
+ * api_implementation.js to decode this and return a node.
+ * @param {Node} targetNode The node to reference.
+ * @return {Object} A serializable node reference.
+ */
+cvox.ApiUtils.makeNodeReference = function(targetNode) {
+  if (targetNode.id && document.getElementById(targetNode.id) == targetNode) {
+    return {'id': targetNode.id};
+  } else if (targetNode instanceof HTMLElement) {
+    var cvoxid = cvox.ApiUtils.nextCvoxId_;
+    targetNode.setAttribute('cvoxid', cvoxid);
+    cvox.ApiUtils.nextCvoxId_ = (cvox.ApiUtils.nextCvoxId_ + 1) % 100;
+    return {'cvoxid': cvoxid};
+  } else if (targetNode.parentElement) {
+    var parent = targetNode.parentElement;
+    var childIndex = -1;
+    for (var i = 0; i < parent.childNodes.length; i++) {
+      if (parent.childNodes[i] == targetNode) {
+        childIndex = i;
+        break;
+      }
+    }
+    if (childIndex >= 0) {
+      var cvoxid = cvox.ApiUtils.nextCvoxId_;
+      parent.setAttribute('cvoxid', cvoxid);
+      cvox.ApiUtils.nextCvoxId_ = (cvox.ApiUtils.nextCvoxId_ + 1) % 100;
+      return {'cvoxid': cvoxid, 'childIndex': childIndex};
+    }
+  }
+  throw 'Cannot reference node: ' + targetNode;
+};
+
+/**
+ * Retrieves a node from its serializable node reference.
+ *
+ * @param {Object} nodeRef A serializable reference to a node.
+ * @return {Node} The node on the page that this object refers to.
+ */
+cvox.ApiUtils.getNodeFromRef = function(nodeRef) {
+  if (nodeRef['id']) {
+    return document.getElementById(nodeRef['id']);
+  } else if (nodeRef['cvoxid']) {
+    var selector = '*[cvoxid="' + nodeRef['cvoxid'] + '"]';
+    var element = document.querySelector(selector);
+    if (element && element.removeAttribute) {
+      element.removeAttribute('cvoxid');
+    }
+    if (nodeRef['childIndex'] != null) {
+      return element.childNodes[nodeRef['childIndex']];
+    } else {
+      return element;
+    }
+  }
+  throw 'Bad node reference: ' + cvox.ChromeVoxJSON.stringify(nodeRef);
+};
+
+//# sourceURL=chrome-extension://kgejglhpjiefppelpmljglcjbhoiplfn/chromevox/injected/api_util.js
+</script><script type="text/javascript" cvoxapi="1" chromevoxscriptbase="https://ssl.gstatic.com/accessibility/javascript/ext/">// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview Public APIs to enable web applications to communicate
+ * with ChromeVox.
+ */
+
+if (typeof(goog) != 'undefined' && goog.provide) {
+  goog.provide('cvox.Api');
+  goog.provide('cvox.Api.Math');
+}
+
+if (typeof(goog) != 'undefined' && goog.require) {
+  goog.require('cvox.ApiImplementation');
+}
+
+(function() {
+   /*
+    * Private data and methods.
+    */
+
+   /**
+    * The name of the port between the content script and background page.
+    * @type {string}
+    * @const
+    */
+   var PORT_NAME = 'cvox.Port';
+
+   /**
+    * The name of the message between the page and content script that sets
+    * up the bidirectional port between them.
+    * @type {string}
+    * @const
+    */
+   var PORT_SETUP_MSG = 'cvox.PortSetup';
+
+   /**
+    * The message between content script and the page that indicates the
+    * connection to the background page has been lost.
+    * @type {string}
+    * @const
+    */
+   var DISCONNECT_MSG = 'cvox.Disconnect';
+
+   /**
+    * The channel between the page and content script.
+    * @type {MessageChannel}
+    */
+   var channel;
+
+   /**
+    * Tracks whether or not the ChromeVox API should be considered active.
+    * @type {boolean}
+    */
+   var isActive_ = false;
+
+   /**
+    * The next id to use for async callbacks.
+    * @type {number}
+    */
+   var nextCallbackId_ = 1;
+
+   /**
+    * Map from callback ID to callback function.
+    * @type {Object<number, function(*)>}
+    */
+   var callbackMap_ = {};
+
+   /**
+    * Internal function to connect to the content script.
+    */
+   function connect_() {
+     if (channel) {
+       // If there is already an existing channel, close the existing ports.
+       channel.port1.close();
+       channel.port2.close();
+       channel = null;
+     }
+
+     channel = new MessageChannel();
+     channel.port1.onmessage = function(event) {
+       if (event.data == DISCONNECT_MSG) {
+         channel = null;
+       }
+       try {
+         var message = JSON.parse(event.data);
+         if (message['id'] && callbackMap_[message['id']]) {
+           callbackMap_[message['id']](message);
+           delete callbackMap_[message['id']];
+         }
+       } catch (e) {
+       }
+     };
+     window.postMessage(PORT_SETUP_MSG, '*', [channel.port2]);
+   }
+
+   /**
+    * Internal function to send a message to the content script and
+    * call a callback with the response.
+    * @param {Object} message A serializable message.
+    * @param {function(*)} callback A callback that will be called
+    *     with the response message.
+    */
+   function callAsync_(message, callback) {
+     var id = nextCallbackId_;
+     nextCallbackId_++;
+     if (message['args'] === undefined) {
+       message['args'] = [];
+     }
+     message['args'] = [id].concat(message['args']);
+     callbackMap_[id] = callback;
+     channel.port1.postMessage(JSON.stringify(message));
+   }
+
+   /**
+    * Wraps callAsync_ for sending speak requests.
+    * @param {Object} message A serializable message.
+    * @param {Object=} properties Speech properties to use for this utterance.
+    * @private
+    */
+   function callSpeakAsync_(message, properties) {
+     var callback = null;
+     /* Use the user supplied callback as callAsync_'s callback. */
+     if (properties && properties['endCallback']) {
+       callback = properties['endCallback'];
+     }
+     callAsync_(message, callback);
+   };
+
+
+   /*
+    * Public API.
+    */
+
+   if (!window['cvox']) {
+     window['cvox'] = {};
+   }
+   var cvox = window.cvox;
+
+
+   /**
+    * ApiImplementation - this is only visible if all the scripts are compiled
+    * together like in the Android case. Otherwise, implementation will remain
+    * null which means communication must happen over the bridge.
+    *
+    * @type {*}
+    */
+   var implementation = null;
+   if (typeof(cvox.ApiImplementation) != 'undefined') {
+     implementation = cvox.ApiImplementation;
+   }
+
+
+   /**
+    * @constructor
+    */
+   cvox.Api = function() {
+   };
+
+   /**
+    * Internal-only function, only to be called by the content script.
+    * Enables the API and connects to the content script.
+    */
+   cvox.Api.internalEnable = function() {
+     isActive_ = true;
+     if (!implementation) {
+       connect_();
+     }
+     var event = document.createEvent('UIEvents');
+     event.initEvent('chromeVoxLoaded', true, false);
+     document.dispatchEvent(event);
+   };
+
+   /**
+    * Internal-only function, only to be called by the content script.
+    * Disables the ChromeVox API.
+    */
+   cvox.Api.internalDisable = function() {
+     isActive_ = false;
+     channel = null;
+     var event = document.createEvent('UIEvents');
+     event.initEvent('chromeVoxUnloaded', true, false);
+     document.dispatchEvent(event);
+   };
+
+   /**
+    * Returns true if ChromeVox is currently running. If the API is available
+    * in the JavaScript namespace but this method returns false, it means that
+    * the user has (temporarily) disabled ChromeVox.
+    *
+    * You can listen for the 'chromeVoxLoaded' event to be notified when
+    * ChromeVox is loaded.
+    *
+    * @return {boolean} True if ChromeVox is currently active.
+    */
+   cvox.Api.isChromeVoxActive = function() {
+     if (implementation) {
+       return isActive_;
+     }
+     return !!channel;
+   };
+
+   /**
+    * Speaks the given string using the specified queueMode and properties.
+    *
+    * @param {string} textString The string of text to be spoken.
+    * @param {number=} queueMode Valid modes are 0 for flush; 1 for queue.
+    * @param {Object=} properties Speech properties to use for this utterance.
+    */
+   cvox.Api.speak = function(textString, queueMode, properties) {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+
+     if (implementation) {
+       implementation.speak(textString, queueMode, properties);
+     } else {
+       var message = {
+         'cmd': 'speak',
+         'args': [textString, queueMode, properties]
+       };
+       callSpeakAsync_(message, properties);
+     }
+   };
+
+   /**
+    * Speaks a description of the given node.
+    *
+    * @param {Node} targetNode A DOM node to speak.
+    * @param {number=} queueMode Valid modes are 0 for flush; 1 for queue.
+    * @param {Object=} properties Speech properties to use for this utterance.
+    */
+   cvox.Api.speakNode = function(targetNode, queueMode, properties) {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+
+     if (implementation) {
+       implementation.speak(cvox.DomUtil.getName(targetNode),
+           queueMode, properties);
+     } else {
+       var message = {
+         'cmd': 'speakNodeRef',
+         'args': [cvox.ApiUtils.makeNodeReference(targetNode), queueMode,
+             properties]
+       };
+       callSpeakAsync_(message, properties);
+     }
+   };
+
+   /**
+    * Stops speech.
+    */
+   cvox.Api.stop = function() {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+
+     if (implementation) {
+       implementation.stop();
+     } else {
+       var message = {
+         'cmd': 'stop'
+       };
+       channel.port1.postMessage(JSON.stringify(message));
+     }
+   };
+
+   /**
+    * Plays the specified earcon sound.
+    *
+    * @param {string} earcon An earcon name.
+    * Valid names are:
+    *   ALERT_MODAL
+    *   ALERT_NONMODAL
+    *   BUTTON
+    *   CHECK_OFF
+    *   CHECK_ON
+    *   EDITABLE_TEXT
+    *   INVALID_KEYPRESS
+    *   LINK
+    *   LISTBOX
+    *   LIST_ITEM
+    *   OBJECT_CLOSE
+    *   OBJECT_OPEN
+    *   OBJECT_SELECT
+    *   PAGE_START_LOADING
+    *   RECOVER_FOCUS
+    *   SKIP
+    *   WRAP
+    *   WRAP_EDGE
+    * This list may expand over time.
+    */
+   cvox.Api.playEarcon = function(earcon) {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+     if (implementation) {
+       implementation.playEarcon(earcon);
+     } else {
+       var message = {
+         'cmd': 'playEarcon',
+         'args': [earcon]
+       };
+       channel.port1.postMessage(JSON.stringify(message));
+     }
+   };
+
+   /**
+    * Synchronizes ChromeVox's internal cursor to the targetNode.
+    * Note that this will NOT trigger reading unless given the
+    * optional argument; it is for setting the internal ChromeVox
+    * cursor so that when the user resumes reading, they will be
+    * starting from a reasonable position.
+    *
+    * @param {Node} targetNode The node that ChromeVox should be synced to.
+    * @param {boolean=} speakNode If true, speaks out the node.
+    */
+   cvox.Api.syncToNode = function(targetNode, speakNode) {
+     if (!cvox.Api.isChromeVoxActive() || !targetNode) {
+       return;
+     }
+
+     if (implementation) {
+       implementation.syncToNode(targetNode, speakNode);
+     } else {
+       var message = {
+         'cmd': 'syncToNodeRef',
+         'args': [cvox.ApiUtils.makeNodeReference(targetNode), speakNode]
+       };
+       channel.port1.postMessage(JSON.stringify(message));
+     }
+   };
+
+   /**
+    * Retrieves the current node and calls the given callback function with it.
+    *
+    * @param {Function} callback The function to be called.
+    */
+   cvox.Api.getCurrentNode = function(callback) {
+     if (!cvox.Api.isChromeVoxActive() || !callback) {
+       return;
+     }
+
+     if (implementation) {
+       callback(cvox.ChromeVox.navigationManager.getCurrentNode());
+     } else {
+       callAsync_({'cmd': 'getCurrentNode'}, function(response) {
+         callback(cvox.ApiUtils.getNodeFromRef(response['currentNode']));
+       });
+     }
+   };
+
+   /**
+    * Specifies how the targetNode should be spoken using an array of
+    * NodeDescriptions.
+    *
+    * @param {Node} targetNode The node that the NodeDescriptions should be
+    * spoken using the given NodeDescriptions.
+    * @param {Array<Object>} nodeDescriptions The Array of
+    * NodeDescriptions for the given node.
+    */
+   cvox.Api.setSpeechForNode = function(targetNode, nodeDescriptions) {
+     if (!cvox.Api.isChromeVoxActive() || !targetNode || !nodeDescriptions) {
+       return;
+     }
+     targetNode.setAttribute('cvoxnodedesc', JSON.stringify(nodeDescriptions));
+   };
+
+   /**
+    * Simulate a click on an element.
+    *
+    * @param {Element} targetElement The element that should be clicked.
+    * @param {boolean} shiftKey Specifies if shift is held down.
+    */
+   cvox.Api.click = function(targetElement, shiftKey) {
+     if (!cvox.Api.isChromeVoxActive() || !targetElement) {
+       return;
+     }
+
+     if (implementation) {
+       cvox.DomUtil.clickElem(targetElement, shiftKey, true);
+     } else {
+       var message = {
+         'cmd': 'clickNodeRef',
+         'args': [cvox.ApiUtils.makeNodeReference(targetElement), shiftKey]
+       };
+       channel.port1.postMessage(JSON.stringify(message));
+     }
+   };
+
+   /**
+    * Returns the build info.
+    *
+    * @param {function(string)} callback Function to receive the build info.
+    */
+   cvox.Api.getBuild = function(callback) {
+     if (!cvox.Api.isChromeVoxActive() || !callback) {
+       return;
+     }
+     if (implementation) {
+       callback(cvox.BuildInfo.build);
+     } else {
+       callAsync_({'cmd': 'getBuild'}, function(response) {
+           callback(response['build']);
+       });
+     }
+   };
+
+   /**
+    * Returns the ChromeVox version, a string of the form 'x.y.z',
+    * like '1.18.0'.
+    *
+    * @param {function(string)} callback Function to receive the version.
+    */
+   cvox.Api.getVersion = function(callback) {
+     if (!cvox.Api.isChromeVoxActive() || !callback) {
+       return;
+     }
+     if (implementation) {
+       callback(cvox.ChromeVox.version + '');
+     } else {
+       callAsync_({'cmd': 'getVersion'}, function(response) {
+           callback(response['version']);
+       });
+     }
+   };
+
+   /**
+    * Returns the key codes of the ChromeVox modifier keys.
+    * @param {function(Array<number>)} callback Function to receive the keys.
+    */
+   cvox.Api.getCvoxModifierKeys = function(callback) {
+     if (!cvox.Api.isChromeVoxActive() || !callback) {
+       return;
+     }
+     if (implementation) {
+       callback(cvox.KeyUtil.cvoxModKeyCodes());
+     } else {
+       callAsync_({'cmd': 'getCvoxModKeys'}, function(response) {
+         callback(response['keyCodes']);
+       });
+     }
+   };
+
+   /**
+    * Returns if ChromeVox will handle this key event.
+    * @param {Event} keyEvent A key event.
+    * @param {function(boolean)} callback Function to receive the keys.
+    */
+   cvox.Api.isKeyShortcut = function(keyEvent, callback) {
+     if (!callback) {
+       return;
+     }
+     if (!cvox.Api.isChromeVoxActive()) {
+       callback(false);
+       return;
+     }
+     /* TODO(peterxiao): Ignore these keys until we do this in a smarter way. */
+     var KEY_IGNORE_LIST = [
+      37, /* Left arrow. */
+      39  /* Right arrow. */
+     ];
+     if (KEY_IGNORE_LIST.indexOf(keyEvent.keyCode) && !keyEvent.altKey &&
+         !keyEvent.shiftKey && !keyEvent.ctrlKey && !keyEvent.metaKey) {
+       callback(false);
+       return;
+     }
+
+     if (implementation) {
+       var keySeq = cvox.KeyUtil.keyEventToKeySequence(keyEvent);
+       callback(cvox.ChromeVoxKbHandler.handlerKeyMap.hasKey(keySeq));
+     } else {
+       var strippedKeyEvent = {};
+       /* Blacklist these props so we can safely stringify. */
+       var BLACK_LIST_PROPS = ['target', 'srcElement', 'currentTarget', 'view'];
+       for (var prop in keyEvent) {
+         if (BLACK_LIST_PROPS.indexOf(prop) === -1) {
+           strippedKeyEvent[prop] = keyEvent[prop];
+         }
+       }
+       var message = {
+         'cmd': 'isKeyShortcut',
+         'args': [strippedKeyEvent]
+       };
+       callAsync_(message, function(response) {
+         callback(response['isHandled']);
+       });
+     }
+   };
+
+   /**
+    * Set key echoing on key press.
+    * @param {boolean} keyEcho Whether key echoing should be on or off.
+    */
+   cvox.Api.setKeyEcho = function(keyEcho) {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+
+     if (implementation) {
+       implementation.setKeyEcho(keyEcho);
+     } else {
+       var message = {
+         'cmd': 'setKeyEcho',
+         'args': [keyEcho]
+       };
+       channel.port1.postMessage(JSON.stringify(message));
+     }
+   };
+
+   /**
+    * Exports the ChromeVox math API.
+    * TODO(dtseng, sorge): Requires more detailed documentation for class
+    * members.
+    * @constructor
+    */
+   cvox.Api.Math = function() {};
+
+   // TODO(dtseng, sorge): This need not be specific to math; once speech engine
+   // stabilizes, we can generalize.
+   // TODO(dtseng, sorge): This API is way too complicated; consolidate args
+   // when re-thinking underlying representation. Some of the args don't have a
+   // well-defined purpose especially for a caller.
+   /**
+    * Defines a math speech rule.
+    * @param {string} name Rule name.
+    * @param {string} dynamic Dynamic constraint annotation. In the case of a
+    *      math rule it consists of a domain.style string.
+    * @param {string} action An action of rule components.
+    * @param {string} prec XPath or custom function constraining match.
+    * @param {...string} constraints Additional constraints.
+    */
+   cvox.Api.Math.defineRule =
+       function(name, dynamic, action, prec, constraints) {
+     if (!cvox.Api.isChromeVoxActive()) {
+       return;
+     }
+     var constraintList = Array.prototype.slice.call(arguments, 4);
+     var args = [name, dynamic, action, prec].concat(constraintList);
+     if (implementation) {
+       implementation.Math.defineRule.apply(implementation.Math, args);
+     } else {
+       var msg = {'cmd': 'Math.defineRule', args: args};
+       channel.port1.postMessage(JSON.stringify(msg));
+     }
+   };
+
+   cvox.Api.internalEnable();
+
+   /**
+    * NodeDescription
+    * Data structure for holding information on how to speak a particular node.
+    * NodeDescriptions will be converted into NavDescriptions for ChromeVox.
+    *
+    * The string data is separated into context, text, userValue, and annotation
+    * to enable ChromeVox to speak each of these with the voice settings that
+    * are consistent with how ChromeVox normally presents information about
+    * nodes to users.
+    *
+    * @param {string} context Contextual information that the user should
+    * hear first which is not part of main content itself. For example,
+    * the user/date of a given post.
+    * @param {string} text The main content of the node.
+    * @param {string} userValue Anything that the user has entered.
+    * @param {string} annotation The role and state of the object.
+    */
+   // TODO (clchen, deboer): Put NodeDescription into externs for developers
+   // building ChromeVox extensions.
+   cvox.NodeDescription = function(context, text, userValue, annotation) {
+     this.context = context ? context : '';
+     this.text = text ? text : '';
+     this.userValue = userValue ? userValue : '';
+     this.annotation = annotation ? annotation : '';
+   };
+})();
+
+//# sourceURL=chrome-extension://kgejglhpjiefppelpmljglcjbhoiplfn/chromevox/injected/api.js
+</script><script type="text/javascript" cvoxapi="1" chromevoxscriptbase="https://ssl.gstatic.com/accessibility/javascript/ext/">// Copyright 2010 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview The script chooser loads any page specific enhancement
+ * scripts that are applicable to the page the user is currently on.
+ *
+ * @author clchen@google.com (Charles Chen)
+ */
+
+var ENHANCEMENT_SCRIPTS_BASE_URL =
+    'https://ssl.gstatic.com/accessibility/javascript/ext/';
+
+cvox.SiteSpecificEnhancements = {};
+
+/**
+ * Loads site specific enhancement scripts.
+ */
+cvox.SiteSpecificEnhancements.load = function() {
+  // Append this to the end of a remote URL to force it to bypass the cache
+  // and be redownloaded.
+  // For gstatic releases, make sure this is '' since gstatic won't accept '?'
+  // params.
+  var forceRedownload = '';
+
+  function loadScripts(srcs) {
+    if (!srcs)
+      return;
+    var src = srcs[0];
+    var theScript = document.createElement('script');
+    theScript.type = 'text/javascript';
+    if (src.substr(0, 4) == 'http') {
+      theScript.src = src + forceRedownload;
+    } else if (ENHANCEMENT_SCRIPTS_BASE_URL) {
+      theScript.src = ENHANCEMENT_SCRIPTS_BASE_URL + src + forceRedownload;
+    } else {
+      theScript.src = chrome.extension.getURL(src) + forceRedownload;
+    }
+    if (srcs.length > 1) {
+      theScript.onload = function() {
+        loadScripts(srcs.slice(1));
+      };
+    }
+    document.head.appendChild(theScript);
+  }
+
+  function loadScript(src) {
+    loadScripts([src]);
+  }
+
+  var currentURL = document.baseURI;
+
+  if (currentURL.indexOf('https://mail.google.com/mail/') == 0 &&
+      currentURL.indexOf('?ui=2&view=btop&ver=1s4dmo0mhdqld#') != -1) {
+    // GMail chat box
+    loadScript('gtalk.js');
+  } else if ((currentURL.indexOf('http://books.google.com/ebooks?id=') == 0) &&
+      (currentURL.indexOf('&printsec=frontcover&output=reader') != -1)) {
+    // Google Books Web Reader
+    loadScripts(['booksReader_api.js', 'booksReader.js']);
+  } else if (currentURL.indexOf('http://news.google.com/') == 0) {
+    // News
+    loadScript('news.js');
+  } else if (currentURL.indexOf(
+      'https://gcomm.talkgadget.google.com/talkgadget/gcomm') == 0) {
+    // GComm
+    loadScript('gcomm.js');
+  } else if (currentURL.indexOf('http://iplayif.com/story?') == 0) {
+    // Parchment z-machine
+    loadScript('parchment.js');
+  } else if (currentURL.indexOf('http://www.google.com/reader') == 0) {
+    // Google Reader
+    loadScript('reader.js');
+  } else if (currentURL.indexOf('https://www.google.com/calendar') == 0 ||
+      currentURL.indexOf('http://www.google.com/calendar') == 0) {
+    // Calendar
+    loadScript('calendar.js');
+  }
+};
+
+cvox.SiteSpecificEnhancements.load();
+
+//# sourceURL=https://ssl.gstatic.com/accessibility/javascript/ext/loader.js
+</script></head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html" class="active">HTML</a></li>
+            <li><a href="http://udacity.github.io/frontend-nanodegree-styleguide/css.html">CSS</a></li>
+            <li><a href="http://udacity.github.io/frontend-nanodegree-styleguide/javascript.html">JavaScript</a></li>
+            <li><a href="https://udacity.github.io/git-styleguide/" target="_blank">Git</a></li>
+        </ul>
+    </nav>
+
+    <h1>Udacity Frontend Nanodegree Style Guide</h1>
+
+    <section>
+        <h2>Introduction</h2>
+        <p>This style guide acts as the official guide to follow in your projects. Udacity evaluators will use this guide to grade your projects. There are many opinions on the "ideal" style in the world of Front-End Web Development. Therefore, in order to reduce the confusion on what style students should follow during the course of their projects, we urge all students to refer to this style guide for their projects.</p>
+    </section>
+
+    <section>
+        <h2>General Formatting Rules</h2>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#capitalization" id="capitalization"><i class="fa fa-link"></i></a>
+                Capitalization
+            </h3>
+            <p>Use only lowercase.</p>
+            <p>All code has to be lowercase. This applies to HTML element names, attributes, attribute values (unless text/CDATA).</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;A HREF="/"&gt;Home&lt;/A&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;a href="/"&gt;Home&lt;/a&gt;</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#trailing-whitespace" id="trailing-whitespace"><i class="fa fa-link"></i></a>
+                Trailing Whitespace
+            </h3>
+            <p>Remove trailing white spaces.</p>
+            <p>Trailing white spaces are unnecessary and can complicate diffs.</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;p&gt;What?&lt;/p&gt;__</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;p&gt;What?&lt;/p&gt;</code></pre>
+
+            <p>If using Sublime Text, this can be done automatically each time you save a file by adding the following to your User Settings JSON file (you should be able to find this within Sublime Text's menu):</p>
+
+            <pre><code>"trim_trailing_white_space_on_save": true</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#indentation" id="indentation"><i class="fa fa-link"></i></a>
+                Indentation
+            </h3>
+            <p>Indentation should be consistent throughout the entire file. Whether you choose to use tabs or spaces, or 2-spaces vs. 4-spaces - just be consistent!</p>
+        </article>
+    </section>
+
+    <section>
+        <h2>General Meta Rules</h2>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#encoding" id="encoding"><i class="fa fa-link"></i></a>
+                Encoding
+            </h3>
+            <p>Use UTF-8 (no BOM).</p>
+            <p>Make sure your editor uses UTF-8 as character encoding, without a byte order mark. Specify the encoding in HTML templates and documents with <code>&lt;meta charset="utf-8"&gt;</code>.</p>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#comments" id="comments"><i class="fa fa-link"></i></a>
+                Comments
+            </h3>
+            <p>Explain code as needed, where possible.</p>
+            <p>Use comments to explain code: What does it cover, what purpose does it serve, and why is the respective solution used or preferred?</p>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#action-items" id="action-items"><i class="fa fa-link"></i></a>
+                Action Items
+            </h3>
+            <p>Mark todos and action items with <code>TODO:</code>.</p>
+            <p>Highlight todos by using the keyword <code>TODO</code> only, not other formats like <code>@@</code>. Append action items after a colon like this: <code>TODO: action item</code>.</p>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;!-- TODO: add other fruits --&gt;
+&lt;ul&gt;
+    &lt;li&gt;Apples&lt;/li&gt;
+    &lt;li&gt;Oranges&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+        </article>
+    </section>
+
+    <section>
+        <h2>HTML Style Rules</h2>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#doctype" id="doctype"><i class="fa fa-link"></i></a>
+                Document Type
+            </h3>
+            <p>Use HTML5.</p>
+            <p>HTML5 (HTML syntax) is preferred for all HTML documents: <code>&lt;!DOCTYPE html&gt;</code>.</p>
+            <p>Do not close self-closing elements, ie. write <code>&lt;br&gt;</code>, not <code>&lt;br /&gt;</code>.</p>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#validity" id="validity"><i class="fa fa-link"></i></a>
+                HTML Validity
+            </h3>
+            <p>Use valid HTML.</p>
+            <p>Using valid HTML is a measurable baseline quality that ensures proper HTML usage and contributes to learning about technical requirements and constraints.</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;title&gt;Page Title&lt;/title&gt;
+&lt;article&gt;This is an article.</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset="utf-8"&gt;
+        &lt;title&gt;Page Title&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;article&gt;This is an article.&lt;/article&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#semantics" id="semantics"><i class="fa fa-link"></i></a>
+                Semantics
+            </h3>
+            <p>Use HTML according to its purpose.</p>
+            <p>Use elements for what they have been created for. For example, use heading elements for headings, <code>p</code> elements for paragraphs, <code>a</code> elements for anchor, etc. Using HTML according to its purpose is important for accessibility, reuse and code efficiency reasons.</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;div onclick="goToRecommendations();"&gt;All recommendations&lt;/div&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;a href="recommendations/"&gt;All recommendations&lt;/a&gt;</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#media-fallback" id="media-fallback"><i class="fa fa-link"></i></a>
+                Multimedia Fallback
+            </h3>
+            <p>Provide alternative contents for multimedia.</p>
+            <p>For multimedia, such as images, video, or animated objects via canvas, make sure to offer alternative access. For images that means use of meaningful alternative text and for video and audio transcripts and captions, if available.</p>
+            <p>Providing alternative contents is important for accessibility reasons. A blind user has few cues to tell what an image is about without the <code>alt</code> attributes, and other users may have no way of understanding what video or audio contents are about either.</p>
+            <p>For images whose alt attributes would introduce redundancy and for images whose purpose is purely decorative which you cannot immediately use CSS for, use no alternative text, as in <code>alt=""</code>.</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;img src="udacity.png"&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;img src="udacity.png" alt="Udacity logo"&gt;</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#separation-of-concerns" id="separation-of-concerns"><i class="fa fa-link"></i></a>
+                Separation of Concerns
+            </h3>
+            <p>Separate structure from presentation from behavior.</p>
+            <p>Strictly keep structure (markup), presentation (styling), and behavior (scripting) apart, and try to keep the interaction between the three to an absolute minimum.</p>
+            <p>That is, make sure documents and templates contain only HTML and HTML that is solely serving structural purposes. Move everything presentational into style sheets, and everything behavioral into scripts. In addition, keep the contact area as small as possible by linking as few style sheets and scripts as possible from documents and templates.</p>
+            <p>Separating structure from presentation from behavior is important for maintenance reasons. It is almost always more expensive to change HTML documents and templates than it is to update style sheets and scripts.</p>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#entity-refs" id="entity-refs"><i class="fa fa-link"></i></a>
+                Entity References
+            </h3>
+            <p>Do not use entity references.</p>
+            <p>There is no need to use entity references like &amp;mdash;, &amp;rdquo;, or &amp;#x263a;, assuming the same encoding (UTF-8) is used for files and editors as well as among teams.</p>
+            <p>The only exceptions apply to characters with special meaning in HTML (like &lt; and &amp;) as well as control or “invisible” characters (like no-break spaces).</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">The currency symbol for the Euro is &amp;ldquo;&amp;eur;&amp;rdquo;.</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">The currency symbol for the Euro is “€”.</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#type-attrs" id="type-attrs"><i class="fa fa-link"></i></a>
+                type Attributes
+            </h3>
+            <p>Omit type attributes for style sheets and scripts.</p>
+            <p>Do not use type attributes for style sheets and scripts. Specifying type attributes in these contexts is not necessary as HTML implies <code>text/css</code> and <code>text/javascript</code> as defaults. This can be safely done even for older browsers</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;link rel="stylesheet" href="css/style.css" type="text/css"&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;link rel="stylesheet" href="css/style.css"&gt;</code></pre>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;script src="js/app.js" type="text/javascript"&gt;&lt;/script&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;script src="js/app.js"&gt;&lt;/script&gt;</code></pre>
+        </article>
+    </section>
+
+    <section>
+        <h2>HTML Formatting Rules</h2>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#general-formatting" id="general-formatting"><i class="fa fa-link"></i></a>
+                General Formatting
+            </h3>
+            <p>Use a new line for every block, list or table element and indent every such child element.</p>
+            <p>Independent of the styling of an element (as CSS allows elements to assume a different role per display property), put every block, list or table element on a new line.</p>
+            <p>Also, indent them if they are child elements of a block, list or table element (if you run into issues around whitespace between list items it's acceptable to put all <code>li</code> elements in one line).</p>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;blockquote&gt;
+    &lt;p&gt;&lt;em&gt;Space&lt;/em&gt;, the final frontier.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+    &lt;li&gt;Moe&lt;/li&gt;
+    &lt;li&gt;Curry&lt;/li&gt;
+    &lt;li&gt;Larry&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th scope="col"&gt;Income&lt;/th&gt;
+            &lt;th scope="col"&gt;Taxes&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;$5.00&lt;/td&gt;
+            &lt;td&gt;$4.50&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+        </article>
+
+        <article>
+            <h3>
+                <a href="http://udacity.github.io/frontend-nanodegree-styleguide/index.html#quotes" id="quotes"><i class="fa fa-link"></i></a>
+                HTML Quotation Marks
+            </h3>
+            <p>When quoting attribute values, use double quotation marks.</p>
+
+            <h4 class="not-recommended">Not Recommended:</h4>
+            <pre><code class="not-recommended">&lt;a href='login/' class='btn btn-secondary'&gt;Login&lt;/a&gt;</code></pre>
+
+            <h4 class="recommended">Recommended:</h4>
+            <pre><code class="recommended">&lt;a href="login/" class="btn btn-secondary"&gt;Login&lt;/a&gt;</code></pre>
+        </article>
+    </section>
+
+
+</body></html>

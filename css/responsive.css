@@ -1,0 +1,48 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+.restaurants-list,
+.restaurant-container,
+.reviews-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width:460px){
+  .filter-options{
+    height: 135px;
+  }
+  .filter-options select{
+    width: 95%;
+  }
+}
+@media screen and (max-width:700px){
+  .restaurants-list li {
+    width: 80%;
+  }
+  .restaurant-container{
+    width: 80%;
+  }
+  .reviews-list li {
+    width: 80%;
+  }
+}
+@media screen and (min-width:701px) and (max-width:1065px){
+  .restaurants-list li {
+    width: 40%;
+  }
+  .restaurant-container{
+    width: 70%;
+  }
+  .reviews-list li {
+    width: 40%;
+  }
+}
+@media screen and (min-width:1066px) and (min-width: 1100px) {
+  header, main, footer {
+    width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
