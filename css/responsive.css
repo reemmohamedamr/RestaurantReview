@@ -11,15 +11,25 @@
 
 @media screen and (max-width:460px){
   .filter-options{
-    height: 135px;
+    height: 190px;
   }
   .filter-options select{
     width: 95%;
   }
+  .filter-div{
+  width: 100%;
+  float: none;
+}
 }
 @media screen and (max-width:700px){
   .restaurants-list li {
     width: 80%;
+  }
+  .filter-options{
+    height: 190px;
+  }
+  .filter-options select{
+    width: 95%;
   }
   .restaurant-container{
     width: 80%;
@@ -27,6 +37,10 @@
   .reviews-list li {
     width: 80%;
   }
+  .filter-div{
+  width: 100%;
+  float: none;
+}
 }
 @media screen and (min-width:701px) and (max-width:1065px){
   .restaurants-list li {
@@ -38,8 +52,14 @@
   .reviews-list li {
     width: 40%;
   }
+  .filter-options select{
+    width: 95%;
+  }
 }
 @media screen and (min-width:1066px) and (min-width: 1100px) {
+  .filter-options select{
+    width: 95%;
+  }
   header, main, footer {
     width: 1100px;
     margin-left: auto;
