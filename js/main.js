@@ -144,6 +144,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 /**
  * Create restaurant HTML.
  */
+ debugger;
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
