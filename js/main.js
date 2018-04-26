@@ -3,24 +3,25 @@ let restaurants,
   cuisines
 var map
 var markers = []
-
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+  registerServiceWorker();
   fetchNeighborhoods();
   fetchCuisines();
-  registerServiceWorker();
 });
-registerServiceWorker= () => {
-if(!navigator.serviceWorker) return;
-
-   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-     console.log('Service worker registration succeeded:', registration);
-   }).catch(function(error) {
-     console.log('Service worker registration failed:', error);
-   });
+registerServiceWorker = () => {
+  DBHelper.registerServiceWorker()
+  .then(registration => {
+      console.log('Service worker registration succeeded:', registration);
+       })
+  .catch(error=>{
+    // Got an error
+      console.log('Service worker registration failed:', error);
+  });
 }
+
 /**
  * Fetch all neighborhoods and set their HTML.
  */
@@ -144,7 +145,6 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 /**
  * Create restaurant HTML.
  */
- debugger;
 createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
