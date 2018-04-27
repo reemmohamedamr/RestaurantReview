@@ -28,7 +28,7 @@ class DBHelper {
     if (!navigator.serviceWorker) {
       return Promise.resolve();
     }
-
+    if(!idb)return;
     return idb.open('restaurants', 1, function (upgradeDb) {
       var store = upgradeDb.createObjectStore('restaurants', {
         /*treats the id property in the restaurants object
@@ -72,22 +72,35 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    fetch(
-      DBHelper.DATABASE_URL
-    ).then(function (response) {
-      const restaurants = response.json();
-      DBHelper.storeRestaurants(restaurants);
-      return restaurants;
-    })
-      .then(addRestaurants)
-      .catch(e => requestError(`Request failed.`));
+    DBHelper._dbPromise.then(function (db) {
+      if (!db) return;
+      var tx = db.transaction('restaurants')
+        .objectStore('restaurants').index('by-date');
+      tx.getAll().then(function (restaurants) {
+        return restaurants;
+      }).then(function (restaurants) {
+        if (!restaurants || restaurants.length<=0) {
+          fetch(
+            DBHelper.DATABASE_URL
+          ).then(function (response) {
+            const restaurants = response.json();
+            DBHelper.storeRestaurants(restaurants);
+            return restaurants;
+          })
+            .then(addRestaurants)
+            .catch(e => requestError(`Request failed.`));
 
-    function addRestaurants(restaurants) {
-      callback(null, restaurants);
-    }
-    function requestError(error) {
-      callback(error, null);
-    }
+          function addRestaurants(restaurants) {
+            callback(null, restaurants);
+          }
+          function requestError(error) {
+            callback(error, null);
+          }
+        }else{
+          return callback(null, restaurants);
+        }
+      });
+    });
   }
 
   /**
