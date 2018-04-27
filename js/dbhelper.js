@@ -56,15 +56,7 @@ class DBHelper {
         rests.forEach(function (restaurant) {
           store.put(restaurant);
         });
-        // limit store to 30 items
         store.index('by-date');
-        // .openCursor(null, "prev").then(function(cursor) {
-        //   return cursor.advance(30);
-        // }).then(function deleteRest(cursor) {
-        //   if (!cursor) return;
-        //   cursor.delete();
-        //   return cursor.continue().then(deleteRest);
-        // });
       });
     });
   }
