@@ -1,6 +1,30 @@
 {
     "short_name": "restaurants-reviews",
-    "name": "Reem Mohamed Amr",
-    "icons": [ ],
-    "start_url": "index.html"
+    "name": "Restaurants Reviews",
+    "icons": [
+        {
+          "src": "img/logo48.png",
+          "type": "image/png",
+          "sizes": "48x48"
+        },
+        {
+          "src": "img/logo96.png",
+          "type": "image/png",
+          "sizes": "96x96"
+        },
+        {
+          "src": "img/logo192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        },
+        {
+          "src": "img/logo512.png",
+          "type": "image/png",
+          "sizes": "512x512"
+        }
+      ],
+    "start_url": "index.html",
+    "background_color": "#005e8f",
+    "theme_color": "#005e8f",
+    "display": "standalone"
   }
