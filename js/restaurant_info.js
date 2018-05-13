@@ -5,6 +5,7 @@ var map;
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
+  registerServiceWorker();
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
@@ -19,7 +20,16 @@ window.initMap = () => {
     }
   });
 }
-
+registerServiceWorker = () => {
+  DBHelper.registerServiceWorker()
+  .then(registration => {
+      console.log('Service worker registration succeeded:', registration);
+       })
+  .catch(error=>{
+    // Got an error
+      console.log('Service worker registration failed:', error);
+  });
+}
 /**
  * Get current restaurant from page URL.
  */
@@ -62,6 +72,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
   cuisine.innerHTML = restaurant.cuisine_type;
+  cuisine.setAttribute("aria-label", `${restaurant.cuisine_type} cuisine`);
 
   // fill operating hours
   if (restaurant.operating_hours) {

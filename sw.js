@@ -1,4 +1,4 @@
-var staticCacheName = 'restaurants-static-cache';
+var staticCacheName = 'restaurants-static-cache2';
 
 self.addEventListener('install', function(event) {
   // TODO: cache /skeleton rather than the root page
